@@ -26,11 +26,12 @@ class Root(Enum):
     B = 11
 
 class Mode(Enum):
-    Major = 0
-    Minor = 1
-    Dim = 2
-    Major7 = 3
-    Min7 = 4
+    Major  = ' '
+    Minor  = 'm'
+    Dim    = 'dim'
+    Major7 = 'maj7'
+    Min7   = '7'
+    Five   = '5'
 
 class SectionRole(Enum):
     Intro = 0
@@ -113,10 +114,16 @@ class Score:
 class Note:
     note_names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
 
-    def __init__(self, pitch: int = 0) -> None:
+    def __init__(
+            self,
+            pitch: int = 0,
+            duration: int = 1,
+            start_time: int = 0
+        ) -> None:
+
         self.pitch: int = pitch
-        self.duration: int = 1
-        self.start_time: int = 0
+        self.duration: int = duration
+        self.start_time: int = start_time
 
     def __eq__(self, other: object) -> bool:
         ''' check wether pitch and duration are equal '''
@@ -157,7 +164,59 @@ class Note:
             raise TypeError(f"check for same note can not happen between 'Note' and '{type(other).__name__}'. Only 'Note' and 'Note'.")
         return self.pitch % 12 == other.pitch % 12
 
+class Chord:
+    def __init__(
+            self,
+            root_pitch: int,
+            mode: Mode = Mode.Major,
+            duration: int = 1,
+            start_time: int = 0
+        ) -> None:
+        self.note_list: list[Note] = []
+        self.root_pitch = root_pitch
+        self.mode = mode
+        self.start_time: int = start_time
+        self.duration: int = duration
+        self.set_chord_notes()
 
+    def set_chord_notes(self) -> None:
+        ''' fill the notes in the chord note list on init '''
+        # add tonica
+        self.note_list.append( Note(pitch = self.root_pitch, duration=self.duration, start_time=self.start_time) )
+
+        if self.mode == Mode.Dim:
+            self.note_list.append( Note(pitch = self.root_pitch + 3, duration=self.duration, start_time=self.start_time) )
+            self.note_list.append( Note(pitch = self.root_pitch + 6, duration=self.duration, start_time=self.start_time) )
+            return
+
+        # add dominant (V)
+        self.note_list.append( Note(pitch = self.root_pitch + 7, duration=self.duration, start_time=self.start_time) )
+
+        if self.mode == Mode.Five:
+            return
+
+        if self.mode in (Mode.Major, Mode.Min7, Mode.Major7):
+            self.note_list.append( Note(pitch = self.root_pitch + 4, duration=self.duration, start_time=self.start_time) )
+            if self.mode == Mode.Major:
+                return
+            if self.mode == Mode.Min7:
+                self.note_list.append( Note(pitch = self.root_pitch + 10, duration=self.duration, start_time=self.start_time) )
+            else:
+                self.note_list.append( Note(pitch = self.root_pitch + 11, duration=self.duration, start_time=self.start_time) )
+
+        elif self.mode == Mode.Minor:
+            self.note_list.append( Note(pitch = self.root_pitch + 3, duration=self.duration, start_time=self.start_time) )
+
+
+        self.note_list.sort(key=lambda n: n.pitch)
+
+    def __repr__(self) -> str:
+        return f'{Note.note_names[self.root_pitch % 12]}{self.mode.value} ({", ".join([str(n) for n in self.note_list])})'
+
+
+
+c = Chord(66, Mode.Min7)
+print(c)
 
 
 # mf.addTempo(
