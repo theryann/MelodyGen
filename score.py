@@ -110,11 +110,53 @@ class Score:
     def saveMidi() -> None:
         ...
 
+class Note:
+    note_names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
 
+    def __init__(self, pitch: int = 0) -> None:
+        self.pitch: int = pitch
+        self.duration: int = 1
+        self.start_time: int = 0
 
-score = Score()
-score.setKey(Root.D, Mode.Minor)
-print(score.available_notes)
+    def __eq__(self, other: object) -> bool:
+        ''' check wether pitch and duration are equal '''
+        if not isinstance(other, Note):
+            raise TypeError(f"'=' is not supported between Types 'Note' and '{type(other).__name__}'.")
+
+        return (
+            self.pitch == other.pitch and
+            self.duration == other.duration
+        )
+
+    def __add__(self, other: object) -> bool:
+        if not isinstance(other, int):
+            raise TypeError(f"'+' is not supported between Types 'Note' and '{type(other).__name__}'. Only 'Note' + 'int'.")
+
+        self.pitch += other
+        self.checkPitchInRange()
+        return self
+
+    def __sub__(self, other: object) -> bool:
+        if not isinstance(other, int):
+            raise TypeError(f"'-' is not supported between Types 'Note' and '{type(other).__name__}'. Only 'Note' - 'int'.")
+
+        self.pitch -= other
+        self.checkPitchInRange()
+        return self
+
+    def __repr__(self) -> str:
+        return f'{Note.note_names[self.pitch % 12]}{self.pitch // 12}'
+
+    def checkPitchInRange(self) -> None:
+        ''' check if pitch is still in midi bounds after addition '''
+        if not 0 <= self.pitch <= 127:
+            raise ValueError(f'Note pitch should be in [0..127]. It is {self.pitch}.')
+
+    def is_same_note_as(self, other) -> bool:
+        if not isinstance(other, Note):
+            raise TypeError(f"check for same note can not happen between 'Note' and '{type(other).__name__}'. Only 'Note' and 'Note'.")
+        return self.pitch % 12 == other.pitch % 12
+
 
 
 
