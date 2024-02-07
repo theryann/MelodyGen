@@ -89,6 +89,7 @@ class Score:
     def __init__(self) -> None:
         self.section_list: list[Section]
         self.key: tuple[int, int]
+        self.bpm: int
 
     def setKey(
             self,
@@ -115,8 +116,9 @@ class Score:
 
         Score.available_notes = [ n for n in range(0, 128) if n % 12 in scale_notes ]
 
-    def generateSections() -> None:
+    def generateSections(self) -> None:
         ...
+
 
 
     def append(self, section: Section) -> None:
@@ -149,7 +151,7 @@ class Note:
             self.duration == other.duration
         )
 
-    def __add__(self, other: object) -> bool:
+    def __add__(self, other: int) -> bool:
         if not isinstance(other, int):
             raise TypeError(f"'+' is not supported between Types 'Note' and '{type(other).__name__}'. Only 'Note' + 'int'.")
 
@@ -157,7 +159,7 @@ class Note:
         self.checkPitchInRange()
         return self
 
-    def __sub__(self, other: object) -> bool:
+    def __sub__(self, other: int) -> bool:
         if not isinstance(other, int):
             raise TypeError(f"'-' is not supported between Types 'Note' and '{type(other).__name__}'. Only 'Note' - 'int'.")
 
@@ -187,11 +189,11 @@ class Note:
         if not isinstance(steps, int):
             raise ValueError(f'Notes can only be moved by pos/neg integer Values (int). Not by type ({type(steps).__name__})')
 
-        # in case that no Scale object is initalized, we shift only move b
+        # in case that no Scale object is initalized, we shift only move by steps
         if not Score.available_notes:
             self.pitch += steps
             self.checkPitchInRange()
-            return
+            return self
 
         # othervise shift pitch until the desired amount of scale steps is made
         scale_steps = 0
@@ -207,6 +209,7 @@ class Note:
             if self.pitch in Score.available_notes:
                 scale_steps += 1
 
+        return self
 
 class Chord:
     def __init__(

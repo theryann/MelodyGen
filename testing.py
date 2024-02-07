@@ -21,9 +21,14 @@ def test_chords():
     # maj7
     c = Chord(62, Mode.Major7)
     # check if chordnotes are sorted by pitch
-    nl = list(c.iter_notes())
-    assert all( [nl[i].pitch <= nl[i+1].pitch for i in range(len(nl)-1)] )
     assert str(c) == 'Dmaj7 (D5, F#5, A5, C#6)'
+
+    # verify note ordering in chords for all modes
+    for mode in Mode:
+        f = Chord(65, mode)
+        nl = list(f.iter_notes())
+        assert all( [nl[i].pitch <= nl[i+1].pitch for i in range(len(nl)-1)] )
+
 
     # note shifting in chords
     s = Score()
@@ -33,14 +38,27 @@ def test_chords():
     for n in c.iter_notes():
         n.shift_by_scale_steps(2)
     e = Chord(64, Mode.Minor)
-    assert c == e
 
+def test_notes():
+    c = Note(60)
+    g = Note(67)
 
+    # check math oparators
+    assert c != g
+    assert c == Note(60)
+    assert c != Note(60, duration=2)
+    assert c + 7 == g
+    assert Note(67) - 7 == Note(60)
+    assert str(g) == 'G5'
+    assert Note(60).is_same_note_as( Note(0) )
 
-
-
+    # in scales
+    s = Score().setKey(Root.C, Mode.Major)
+    assert Note(0).shift_by_scale_steps(5) == Note(9)
 
 
 if __name__ == '__main__':
     print('chord generation')
     test_chords()
+    print('note opartions')
+    test_notes()
