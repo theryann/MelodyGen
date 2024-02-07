@@ -56,6 +56,16 @@ def test_notes():
     s = Score().setKey(Root.C, Mode.Major)
     assert Note(0).shift_by_scale_steps(5) == Note(9)
 
+    # test for value error on wrong notes
+    try:
+        Note(200).checkPitchInRange()
+    except ValueError:
+        pass
+    try:
+        Note(-2).checkPitchInRange()
+    except ValueError:
+        pass
+
 
 if __name__ == '__main__':
     print('chord generation')
